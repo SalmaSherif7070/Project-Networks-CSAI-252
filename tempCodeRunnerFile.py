@@ -1,0 +1,1 @@
+resentation of the image: {bits}")
