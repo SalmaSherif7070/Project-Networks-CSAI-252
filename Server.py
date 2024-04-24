@@ -43,6 +43,7 @@ port = 12345
 
 s1.bind(('127.0.0.1', port))
 
+# while True:
 for i in range (len(packets)):
-    data, addr = s1.recvfrom(4064)
+    data, addr = s1.recvfrom(4096)
     s1.sendto(packets[i].encode(), addr)

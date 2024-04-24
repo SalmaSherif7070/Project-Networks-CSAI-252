@@ -15,10 +15,10 @@ port = 12345
 address = ('127.0.0.1', port)
 
 
-data, server = s2.recvfrom(4064)
+# acknowledgement = acknowledgement(data.decode()).encode()
+sent = s2.sendto(b"Hello", address)
 
-acknowledgement = acknowledgement(data.decode()).encode()
-sent = s2.sendto(acknowledgement, address)
+data, server = s2.recvfrom(4096)
 
 print(f'received {data.decode()}')
 s2.close()
