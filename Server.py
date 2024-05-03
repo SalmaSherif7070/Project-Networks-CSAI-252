@@ -2,6 +2,7 @@ import os
 from PIL import Image
 import math
 import socket as s
+import time
 
 
 # Step 1
@@ -36,14 +37,59 @@ num_of_chunks = len(bits) / chunk_size
 packets = divide_bits_into_chunks(file_id, bits, chunk_size, num_of_chunks)
 # print(packets[-1])
 
+window_size = 3
+back_iterations = math.ceil(len(packets)/window_size)
 
+
+# ... [rest of your sender code] ...
 
 s1 = s.socket(s.AF_INET, s.SOCK_DGRAM)
 port = 12345
+addr = ('127.0.0.1', port)
 
-s1.bind(('127.0.0.1', port))
+# Initialize the base and next sequence number
+base = 0
+next_seq_num = 0
+window_size = 3
+timeout = 0.5  # Set a timeout value for retransmission
 
-# while True:
-for i in range (len(packets)):
-    data, addr = s1.recvfrom(4096)
-    s1.sendto(packets[i].encode(), addr)
+# Function to start a timer for the oldest unacknowledged packet
+def start_timer():
+    return time.time()
+
+# Function to check if the timer has expired
+def timer_expired(start_time):
+    return time.time() - start_time > timeout
+
+# Start the timer
+timer = start_timer()
+
+while base < len(packets):
+    # Send all packets in the window
+    while next_seq_num < base + window_size and next_seq_num < len(packets):
+        s1.sendto(packets[next_seq_num].encode(), addr)
+        print("Sending packet ", next_seq_num)
+        next_seq_num += 1
+
+    # Wait for acknowledgment or timeout
+    while True:
+        try:
+            s1.settimeout(timeout)
+            ack, _ = s1.recvfrom(4096)
+            ack_num = int(ack.decode().split()[-1])  # Extract the packet number from the acknowledgment
+            print(f"Acknowledgment received for packet {ack_num}")
+
+            # Move the window if the acknowledgment is for the base packet
+            if ack_num >= base:
+                base = ack_num + 1
+                timer = start_timer()  # Reset the timer
+            if all(ack[base:base+window_size]):
+                break  # Break the inner loop and send the next window
+            
+        except s.timeout:
+            # If timeout occurs, go back to the base and resend all packets in the window
+            print("Timeout occurred, resending window")
+            next_seq_num = base
+            break  # Break the inner loop to resend the packets
+
+s1.close()  # Don't forget to close the socket
