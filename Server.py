@@ -50,6 +50,7 @@ timeout = 0.5
 def start_timer():
     return time.time()
 
+pre_ack = -1
 
 
 timer = start_timer()
@@ -68,6 +69,8 @@ while base < len(packets):
             ack, _ = s1.recvfrom(4096)
             ack_num = int(ack.decode())
             print(f"Acknowledgment received for packet {ack.decode()}")
+            # if pre_ack == ack:
+
 
             # Move step if recieved ack + Reset the timer
             if ack_num >= base:
