@@ -30,61 +30,65 @@ def divide_bits_into_chunks(file_id, bits, chunk_size, num_of_chunks):
 
 
 image_path = "C:\\Users\\salma\\OneDrive\\Desktop\\UNI\\Spring 2024\\Network\\Project Networks CSAI 252\\images\\small file.jpeg"
-bits = image_to_bits(image_path)
-chunk_size = 1000
-file_id = 0
-num_of_chunks = len(bits) / chunk_size
-packets = divide_bits_into_chunks(file_id, bits, chunk_size, num_of_chunks)
+image_path2 = "C:\\Users\\salma\\OneDrive\\Desktop\\UNI\\Spring 2024\\Network\\Project Networks CSAI 252\\images\\medium file.jpeg"
+image_path3 = "C:\\Users\\salma\\OneDrive\\Desktop\\UNI\\Spring 2024\\Network\\Project Networks CSAI 252\\images\\large file.jpeg"
+images = [image_path, image_path2, image_path3]
 
-
-
+# open connection
 s1 = s.socket(s.AF_INET, s.SOCK_DGRAM)
 port = 12345
 addr = ('127.0.0.1', port)
 
-base = 0
-next_packet_num = 0
-window_size = 3
-timeout = 0.5
+# send the 3 images
+for image_path in images:
 
-def start_timer():
-    return time.time()
-
-pre_ack = -1
-
-
-timer = start_timer()
-
-while base < len(packets):
-    # Send all packets in the window
-    while next_packet_num < base + window_size and next_packet_num < len(packets):
-        s1.sendto(packets[next_packet_num].encode(), addr)
-        print("Sending packet ", next_packet_num)
-        next_packet_num += 1
-
-    # Wait for acknowledgment + move window or timeout
-    while True:
-        try:
-            s1.settimeout(timeout)
-            ack, _ = s1.recvfrom(4096)
-            ack_num = int(ack.decode())
-            print(f"Acknowledgment received for packet {ack.decode()}")
-            # if pre_ack == ack:
+    bits = image_to_bits(image_path)
+    chunk_size = 1000
+    file_id = 0
+    num_of_chunks = len(bits) / chunk_size
+    packets = divide_bits_into_chunks(file_id, bits, chunk_size, num_of_chunks)
 
 
-            # Move step if recieved ack + Reset the timer
-            if ack_num >= base:
-                base = ack_num + 1
-                timer = start_timer()  
-            
-            # return True unless the ack not recieved
-            if all(ack[base:base+window_size]):
-                break  
-            
-        except s.timeout:
-            # Did not recive ack -> start sending again from base
-            print("Timeout occurred, resending window")
-            next_packet_num = base
-            break
+    base = 0
+    next_packet_num = 0
+    window_size = 3
+    timeout = 0.5
 
+    def start_timer():
+        return time.time()
+
+
+
+    timer = start_timer()
+
+    while base < len(packets):
+        # Send all packets in the window
+        while next_packet_num < base + window_size and next_packet_num < len(packets):
+            s1.sendto(packets[next_packet_num].encode(), addr)
+            print("Sending packet ", next_packet_num)
+            next_packet_num += 1
+
+        # Wait for acknowledgment + move window or timeout
+        while True:
+            try:
+                s1.settimeout(timeout)
+                ack, _ = s1.recvfrom(4096)
+                ack_num = int(ack.decode())
+                print(f"Acknowledgment received for packet {ack.decode()}")
+
+
+                # Move step if recieved ack + Reset the timer
+                if ack_num >= base:
+                    base = ack_num + 1
+                    timer = start_timer()  
+                
+                # return True unless the ack not recieved
+                if all(ack[base:base+window_size]):
+                    break  
+                
+            except s.timeout:
+                # Did not recive ack -> start sending again from base
+                print("Timeout occurred, resending window")
+                next_packet_num = base
+                break
 s1.close()
