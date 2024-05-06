@@ -29,13 +29,12 @@ def divide_bits_into_chunks(file_id, bits, chunk_size, num_of_chunks):
     return packets
 
 
-image_path = 'C:\\Users\\salma\\Downloads\\small file.jpeg'
+image_path = "C:\\Users\\salma\\OneDrive\\Desktop\\UNI\\Spring 2024\\Network\\Project Networks CSAI 252\\images\\small file.jpeg"
 bits = image_to_bits(image_path)
 chunk_size = 1000
 file_id = 0
 num_of_chunks = len(bits) / chunk_size
 packets = divide_bits_into_chunks(file_id, bits, chunk_size, num_of_chunks)
-packets = packets[0:6]
 
 
 
