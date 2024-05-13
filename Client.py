@@ -4,6 +4,7 @@ import os
 import random
 
 
+
 def acknowledgement(packet):
     packet_id = packet[0:16]
     file_id = packet[16:32]
@@ -27,7 +28,7 @@ def bits_to_image(bits, width, height):
 
 image = ''
 index_of_lost_packets = [random.randint(0, 399) for _ in range(55)]
-print(index_of_lost_packets)
+# print(index_of_lost_packets)
 pos_ack = -1
 
 s2 = s.socket(s.AF_INET, s.SOCK_DGRAM)
@@ -48,16 +49,16 @@ for i in range (3):
             packet_id = int(packet_id) + 1
             
 
-        print('P_ID ', packet_id, "expected_packet_num ", expected_packet_num)
+        # print('P_ID ', packet_id, "expected_packet_num ", expected_packet_num)
 
         if packet_id == expected_packet_num:
-            print(f'Packet {expected_packet_num} received correctly')
+            # print(f'Packet {expected_packet_num} received correctly')
             pos_ack = expected_packet_num
             expected_packet_num += 1
-            print(Trailer)
+            # print(Trailer)
             image = image + extract_msg(data.decode())
-        else:
-            print(f'Packet {packet_id} received out of order')
+        # else:
+        #     print(f'Packet {packet_id} received out of order')
 
         # Send acknowledgment for the last correctly received packet
         ack_message = f"{pos_ack}"
