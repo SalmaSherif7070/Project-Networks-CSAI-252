@@ -5,6 +5,9 @@ import random
 import matplotlib.pyplot as plt
 import time
 import datetime
+import copy 
+import cv2
+import numpy as np
 
 
 def acknowledgement(packet):
@@ -17,18 +20,14 @@ def extract_msg(packet):
     return packet[32:-32]
 
 def bits_to_image(bits, width, height):
-        img = Image.new('1', (width, height))
-        pixels = img.load()
-        idx = 0
-        for y in range(height):
-            for x in range(width):
-                pixels[x, y] = int(bits[idx]) * 255
-                idx += 1
-        return img
+    bytes_array = bytearray(int(bits[i:i+8], 2) for i in range(0, len(bits), 8))
+    nparr = np.frombuffer(bytes_array, dtype=np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR).reshape(height, width, 3)
+    return image
 
 
-def start_timer():
-        return time.time()
+# def start_timer():
+#         return time.time()
 
 image = ''
 
@@ -38,16 +37,17 @@ s2 = s.socket(s.AF_INET, s.SOCK_DGRAM)
 port = 12345
 address = ('127.0.0.1', port)
 s2.bind(address)
-img_dim = [(800,500), (1280,720), (1280,853)]
+img_dim = [(800,500), (1280,720), (1280,853), (800,500), (1280,720), (1280,853), (800,500), (1280,720), (1280,853)]
 
-for i in range (3):
+for i in range (9):
     index_of_lost_packets = [random.randint(0, 399) for _ in range(55)]
-    copy_of_index_of_lost_packets = index_of_lost_packets
+    copy_of_index_of_lost_packets = copy.deepcopy(index_of_lost_packets)
+    
     expected_packet_num = 0
     list_of_times = []
     list_of_ids = []
     list_of_colors = []
-    timer = start_timer()
+    # client_timer = start_timer()
 
     while True:
         data, server = s2.recvfrom(4096)
@@ -87,28 +87,28 @@ for i in range (3):
 
         if Trailer == '00000000000000001111111111111111':
             # print(image)
-            print(f'Last packet received: {data.decode()}')
+            # print(f'Last packet received: {data.decode()}')
             break
 
-
-    # print(image)
-    count_red = list_of_colors.count('red')
-
-    print("Number of occurrences of 'red':", count_red)
     plt.figure(figsize=(10, 6))
-    plt.scatter(list_of_times, list_of_ids, color='blue')
-    plt.xlabel('Microseconds')
-    plt.ylabel('ids')
-    plt.title('Scatter Plot of Microseconds vs Random Numbers')
+    for time, color, number in zip(list_of_times, list_of_colors, list_of_ids):
+        plt.scatter(time, number, color=color)
+
+    plt.xlabel('Time')
+    plt.ylabel('Number')
+    plt.title(f'Scatter Plot of Time vs Number with Color Coding{i}')
+    plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+    print("plt.show() ", i)
     width = img_dim[i][0]
     height = img_dim[i][1]
     img = bits_to_image(image, width, height)
-    # img.show()
-    img.save(f'output{i}.png')
-    os.system(f'start output{i}.png')
+    output_filename = f'output_image{i}.png'
+    cv2.imwrite(output_filename, img)
+
+
     image = ''
 
 s2.close()
