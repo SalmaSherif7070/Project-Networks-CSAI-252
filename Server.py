@@ -4,17 +4,19 @@ import math
 import socket as s
 import time
 import datetime
-
+import cv2
+import numpy as np
 
 # Step 1
 def image_to_bits(image_path):
-    with Image.open(image_path) as img:
-        width, height = img.size
-        pixels = img.convert('1').load()
-        bits = ''
-        for y in range(height):
-            for x in range(width):
-                bits += '1' if pixels[x, y] else '0'
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Encode the image as a byte string
+    _, image_bytes = cv2.imencode('.jpeg', image)
+
+    # Convert the byte string to a sequence of 0s and 1s
+    bits = ''.join(format(byte, '08b') for byte in image_bytes.tobytes())
     return bits
 
 

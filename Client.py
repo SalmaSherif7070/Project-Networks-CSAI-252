@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import time
 import datetime
 import copy 
+import cv2
+import numpy as np
 
 
 def acknowledgement(packet):
@@ -18,14 +20,10 @@ def extract_msg(packet):
     return packet[32:-32]
 
 def bits_to_image(bits, width, height):
-        img = Image.new('1', (width, height))
-        pixels = img.load()
-        idx = 0
-        for y in range(height):
-            for x in range(width):
-                pixels[x, y] = int(bits[idx]) * 255
-                idx += 1
-        return img
+    bytes_array = bytearray(int(bits[i:i+8], 2) for i in range(0, len(bits), 8))
+    nparr = np.frombuffer(bytes_array, dtype=np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR).reshape(height, width, 3)
+    return image
 
 
 # def start_timer():
@@ -106,9 +104,10 @@ for i in range (3):
     width = img_dim[i][0]
     height = img_dim[i][1]
     img = bits_to_image(image, width, height)
-    # img.show()
-    img.save(f'output{i}.png')
-    os.system(f'start output{i}.png')
+    output_filename = f'output_image{i}.png'
+    cv2.imwrite(output_filename, img)
+
+
     image = ''
 
 s2.close()
