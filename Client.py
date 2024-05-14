@@ -2,7 +2,9 @@ import socket as s
 from PIL import Image
 import os
 import random
-
+import matplotlib.pyplot as plt
+import time
+import datetime
 
 
 def acknowledgement(packet):
@@ -25,10 +27,11 @@ def bits_to_image(bits, width, height):
         return img
 
 
+def start_timer():
+        return time.time()
 
 image = ''
-index_of_lost_packets = [random.randint(0, 399) for _ in range(55)]
-# print(index_of_lost_packets)
+
 pos_ack = -1
 
 s2 = s.socket(s.AF_INET, s.SOCK_DGRAM)
@@ -38,7 +41,13 @@ s2.bind(address)
 img_dim = [(800,500), (1280,720), (1280,853)]
 
 for i in range (3):
+    index_of_lost_packets = [random.randint(0, 399) for _ in range(55)]
+    copy_of_index_of_lost_packets = index_of_lost_packets
     expected_packet_num = 0
+    list_of_times = []
+    list_of_ids = []
+    list_of_colors = []
+    timer = start_timer()
 
     while True:
         data, server = s2.recvfrom(4096)
@@ -57,6 +66,18 @@ for i in range (3):
             expected_packet_num += 1
             # print(Trailer)
             image = image + extract_msg(data.decode())
+            current_time = datetime.datetime.now()
+            formatted_time = current_time.strftime("%H:%M:%S")
+            milliseconds_since_epoch = current_time.timestamp() * 1000
+            
+            if (int(packet_id) in copy_of_index_of_lost_packets ):
+            
+                list_of_colors.append('red')
+            else:
+                list_of_colors.append('blue')
+            
+            list_of_times.append(milliseconds_since_epoch)
+            list_of_ids.append(packet_id)
         # else:
         #     print(f'Packet {packet_id} received out of order')
 
@@ -71,7 +92,17 @@ for i in range (3):
 
 
     # print(image)
+    count_red = list_of_colors.count('red')
 
+    print("Number of occurrences of 'red':", count_red)
+    plt.figure(figsize=(10, 6))
+    plt.scatter(list_of_times, list_of_ids, color='blue')
+    plt.xlabel('Microseconds')
+    plt.ylabel('ids')
+    plt.title('Scatter Plot of Microseconds vs Random Numbers')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
     width = img_dim[i][0]
     height = img_dim[i][1]
     img = bits_to_image(image, width, height)
