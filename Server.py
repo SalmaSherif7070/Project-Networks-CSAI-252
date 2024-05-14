@@ -32,9 +32,9 @@ def divide_bits_into_chunks(file_id, bits, chunk_size, num_of_chunks):
     return packets
 
 
-image_path = "C:\\Users\\salma\\OneDrive\\Desktop\\UNI\\Spring 2024\\Network\\Project Networks CSAI 252\\images\\small-file.jpg"
-image_path2 = "C:\\Users\\salma\\OneDrive\\Desktop\\UNI\\Spring 2024\\Network\\Project Networks CSAI 252\\images\\medium-file.jpg"
-image_path3 = "C:\\Users\\salma\\OneDrive\\Desktop\\UNI\\Spring 2024\\Network\\Project Networks CSAI 252\\images\\large-file.jpg"
+image_path = "C:\\Users\\Doha\\Downloads\\small file.jpeg"
+image_path2 = "C:\\Users\\Doha\\Downloads\\medium file.jpeg"
+image_path3 = "C:\\Users\\Doha\\Downloads\\large file.jpeg"
 images = [image_path, image_path2, image_path3]
 
 # open connection

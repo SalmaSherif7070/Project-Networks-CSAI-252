@@ -5,6 +5,7 @@ import random
 import matplotlib.pyplot as plt
 import time
 import datetime
+import copy 
 
 
 def acknowledgement(packet):
@@ -27,8 +28,8 @@ def bits_to_image(bits, width, height):
         return img
 
 
-def start_timer():
-        return time.time()
+# def start_timer():
+#         return time.time()
 
 image = ''
 
@@ -42,12 +43,13 @@ img_dim = [(800,500), (1280,720), (1280,853)]
 
 for i in range (3):
     index_of_lost_packets = [random.randint(0, 399) for _ in range(55)]
-    copy_of_index_of_lost_packets = index_of_lost_packets
+    copy_of_index_of_lost_packets = copy.deepcopy(index_of_lost_packets)
+    
     expected_packet_num = 0
     list_of_times = []
     list_of_ids = []
     list_of_colors = []
-    timer = start_timer()
+    # client_timer = start_timer()
 
     while True:
         data, server = s2.recvfrom(4096)
@@ -90,16 +92,14 @@ for i in range (3):
             print(f'Last packet received: {data.decode()}')
             break
 
-
-    # print(image)
-    count_red = list_of_colors.count('red')
-
-    print("Number of occurrences of 'red':", count_red)
     plt.figure(figsize=(10, 6))
-    plt.scatter(list_of_times, list_of_ids, color='blue')
-    plt.xlabel('Microseconds')
-    plt.ylabel('ids')
-    plt.title('Scatter Plot of Microseconds vs Random Numbers')
+    for time, color, number in zip(list_of_times, list_of_colors, list_of_ids):
+        plt.scatter(time, number, color=color)
+
+    plt.xlabel('Time')
+    plt.ylabel('Number')
+    plt.title('Scatter Plot of Time vs Number with Color Coding')
+    plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
     plt.grid(True)
     plt.tight_layout()
     plt.show()
